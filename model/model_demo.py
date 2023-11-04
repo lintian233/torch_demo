@@ -1,5 +1,6 @@
 import torch
 
+
 class Lambda(torch.nn.Module):
     def __init__(self, func):
         super().__init__()
@@ -7,7 +8,7 @@ class Lambda(torch.nn.Module):
 
     def forward(self, x):
         return self.func(x)
-    
+
 
 class demoModel(torch.nn.Module):
     def __init__(self):
@@ -48,6 +49,3 @@ class demoModel(torch.nn.Module):
         x = self.conv2(x)
         x = self.dense(x)
         return x
-    
-
-    

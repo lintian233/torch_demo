@@ -11,13 +11,13 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 # from tqdm.autonotebook import tqdm
 
+
 class learn:
     def __init__(self, model, train_dl, vaild_dl, catgories=None):
         self.model, self.opt, self.loss_func = model
         self.train_dl = train_dl
         self.vaild_dl = vaild_dl
         self.catgories = catgories
-
 
     def __loss_batch(self, model, loss_func, xb, yb, opt=None):
         loss = loss_func(model(xb), yb)
@@ -26,7 +26,7 @@ class learn:
             opt.step()
             opt.zero_grad()
         return loss.item(), len(xb)
-    
+
     def predict(self, test_dl):
         self.model.eval()
         with torch.no_grad():
@@ -42,7 +42,7 @@ class learn:
             predict_labels = np.argmax(predict_labels, axis=1)
 
         return true_labels, predict_labels
-    
+
     def fit(self, epochs):
         for epoch in range(epochs):
             start_time = time.time()
@@ -54,7 +54,10 @@ class learn:
             self.model.eval()
             with torch.no_grad():
                 losses, nums = zip(
-                    *[self.__loss_batch(self.model, self.loss_func, xb, yb) for xb, yb in self.vaild_dl]
+                    *[
+                        self.__loss_batch(self.model, self.loss_func, xb, yb)
+                        for xb, yb in self.vaild_dl
+                    ]
                 )
 
             val_loss = np.sum(np.multiply(losses, nums)) / np.sum(nums)
@@ -81,5 +84,5 @@ class learn:
 
         cm = confusion_matrix(true_labels, predict_labels)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=catgories)
-        disp.plot()
-        disp.figure_.savefig("./confusion_matrix.png")
+        disp.plot(xticks_rotation="vertical")
+        disp.figure_.savefig("./confusion_matrix.png", dpi=300, bbox_inches="tight")

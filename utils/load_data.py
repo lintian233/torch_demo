@@ -69,12 +69,13 @@ def fattening_dataset(dataset_path_dic):
 
 
 def padding_light_curve(light_curve, min_length):
-    #padding with mean value
+    # padding with mean value
     if len(light_curve) < min_length:
         light_curve = np.pad(light_curve, (0, min_length - len(light_curve)), "mean")
     else:
         light_curve = light_curve[:min_length]
     return light_curve
+
 
 def get_mag_data_from_path(path, min_length):
     light_curve = read_table(path, sep="\\s+", names=["time", "mag", "err"])
@@ -93,12 +94,12 @@ class LightcurveDataset(Dataset):
         # self.min_length, uncepted_index = min_length_of_dataset(self.dataset, dataset_path)
         # self.labels = np.delete(self.labels, uncepted_index)
         # self.dataset = np.delete(self.dataset, uncepted_index)
-        
+
         self.transform = transform
         self.target_transform = target_transform
         self.label_encoder = OneHotEncoder()
         self.label_encoder.fit(self.labels.reshape(-1, 1))
-        
+
     def get_catgories(self):
         catgories = self.label_encoder.categories_[0]
         return catgories

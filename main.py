@@ -32,8 +32,6 @@ def load_model(model, lr):
 
 
 def simple_demo():
-    thread = torch.get_num_threads()
-    #set the
     DATSET_PATH = "./data/OCVS"
     TRAIN_SIZE = 0.8
     BATCH_SIZE = 30
@@ -57,9 +55,9 @@ def simple_demo():
     # TRAIN MODEL
     learner = learn(model, train_dl, vaild_dl, catgories)
     # learner.lr_find()
-    learner.fit(2)
+    learner.fit(EPOCHS)
     learner.show_confusion_matrix()
-    
+
 
 if __name__ == "__main__":
     simple_demo()
