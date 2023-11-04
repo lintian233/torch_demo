@@ -39,14 +39,15 @@ class demoModel(torch.nn.Module):
         self.dense = torch.nn.Sequential(
             torch.nn.AdaptiveAvgPool1d(200),
             Lambda(lambda x: x.view(x.size(0), -1)),
-            torch.nn.Linear(20 * 200, 18),
+            torch.nn.Linear(20 * 200, 20),
             torch.nn.Softmax(dim=1),
         )
 
     def forward(self, x):
         x = self.conv1(x)
         x = self.conv2(x)
-        x = self.conv3(x)
-        x = self.conv3(x)
         x = self.dense(x)
         return x
+    
+
+    

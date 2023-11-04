@@ -65,35 +65,21 @@ def fattening_dataset(dataset_path_dic):
             labels.append(key)
             dataset.append(value[i])
 
-    return labels, dataset
+    return np.array(labels), np.array(dataset)
 
 
-def min_length_of_dataset(dataset_path):
-    """
-    return the min length of all light curve data,
-    and the index of light curve which length is less than 400
-    """
-    uncepted_length_index = []
-    min_length = 100000000
-    limit_length = 400
-    for i, path in enumerate(dataset_path):
-        light_curve = read_table(path, sep="\\s+", names=["time", "mag", "err"])
-        light_curve = light_curve["mag"].values
-        length = len(light_curve)
-        if length < limit_length:
-            uncepted_length_index.append(i)
-            continue
-
-        if length < min_length:
-            min_length = length
-
-    return min_length, uncepted_length_index
-
+def padding_light_curve(light_curve, min_length):
+    #padding with mean value
+    if len(light_curve) < min_length:
+        light_curve = np.pad(light_curve, (0, min_length - len(light_curve)), "mean")
+    else:
+        light_curve = light_curve[:min_length]
+    return light_curve
 
 def get_mag_data_from_path(path, min_length):
     light_curve = read_table(path, sep="\\s+", names=["time", "mag", "err"])
     light_curve = light_curve["mag"].values
-    light_curve = light_curve[:min_length]
+    light_curve = padding_light_curve(light_curve, min_length)
     # transform to double
     light_curve = light_curve.astype(np.double)
     return light_curve
@@ -104,20 +90,25 @@ class LightcurveDataset(Dataset):
         super().__init__()
         self.data_path_dic = get_dataset_file_path(dataset_path)
         self.labels, self.dataset = fattening_dataset(self.data_path_dic)
-        self.min_length, uncepted_index = min_length_of_dataset(self.dataset)
-        self.labels = np.delete(self.labels, uncepted_index)
-        self.dataset = np.delete(self.dataset, uncepted_index)
+        # self.min_length, uncepted_index = min_length_of_dataset(self.dataset, dataset_path)
+        # self.labels = np.delete(self.labels, uncepted_index)
+        # self.dataset = np.delete(self.dataset, uncepted_index)
+        
         self.transform = transform
         self.target_transform = target_transform
         self.label_encoder = OneHotEncoder()
         self.label_encoder.fit(self.labels.reshape(-1, 1))
+        
+    def get_catgories(self):
+        catgories = self.label_encoder.categories_[0]
+        return catgories
 
     def __len__(self):
         assert len(self.labels) == len(self.dataset)
         return len(self.labels)
 
     def __getitem__(self, index):
-        light_curve = get_mag_data_from_path(self.dataset[index], self.min_length)
+        light_curve = get_mag_data_from_path(self.dataset[index], 401)
         label = self.labels[index]
         if self.transform:
             light_curve = torch.as_tensor(light_curve, dtype=torch.float32)

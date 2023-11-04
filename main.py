@@ -32,6 +32,8 @@ def load_model(model, lr):
 
 
 def simple_demo():
+    thread = torch.get_num_threads()
+    #set the
     DATSET_PATH = "./data/OCVS"
     TRAIN_SIZE = 0.8
     BATCH_SIZE = 30
@@ -41,20 +43,23 @@ def simple_demo():
 
     # LOAD DATA
     dataset = LightcurveDataset(DATSET_PATH, transform=True, target_transform=True)
+    catgories = dataset.get_catgories()
     train_set, vaild_set = train_test_split(
         dataset, train_size=TRAIN_SIZE, random_state=RANDOM_STATE
     )
     train_dl, vaild_dl = get_data(train_set, vaild_set, batch_size=BATCH_SIZE)
     train_dl = WrappedDataLoader(train_dl, preprocess)
-    vaild_dl = WrappedDataLoader(train_dl, preprocess)
+    vaild_dl = WrappedDataLoader(vaild_dl, preprocess)
 
     # LOAD MODEL
     model = load_model(demoModel, LR)
 
     # TRAIN MODEL
-    learner = learn(model, train_dl, vaild_dl)
-    #learner.lr_find()
-    learner.fit(EPOCHS)
+    learner = learn(model, train_dl, vaild_dl, catgories)
+    # learner.lr_find()
+    learner.fit(2)
+    learner.show_confusion_matrix()
+    
 
 if __name__ == "__main__":
     simple_demo()
