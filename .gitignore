@@ -1,1 +1,4 @@
 /data/*
+/framework/__pychache__/*
+/model/__pychache__/*
+/utils/__pychache__/*
