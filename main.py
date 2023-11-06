@@ -13,16 +13,23 @@ dev = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
 def get_data(train_set, test_set, batch_size):
-    train_batch_size = batch_size
-    test_batch_size = batch_size * 2
     return (
-        DataLoader(train_set, train_batch_size, shuffle=True),
-        DataLoader(test_set, test_batch_size, shuffle=True),
+        DataLoader(train_set, batch_size, shuffle=True),
+        DataLoader(test_set, batch_size*2, shuffle=True),
     )
 
-def preprocess(x, y):
-    return x.view(-1, 1, 401).to(dev), y.to(dev)
 
+def z_score(x, mean, std):
+    return (x - mean) / std
+
+
+def preprocess(x, y):
+    x = x.view(-1, 1, 401)
+    mean = torch.mean(x, dim=2, keepdim=True)
+    std = torch.std(x, dim=2, keepdim=True)
+    x = z_score(x, mean, std)
+    return x.to(dev), y.to(dev)    
+    
 
 def load_model(model, lr):
     model = model().to(dev)
@@ -37,14 +44,12 @@ def simple_demo():
     BATCH_SIZE = 30
     EPOCHS = 30
     RANDOM_STATE = 42
-    LR = 0.001
+    LR = 8e-3
 
     # LOAD DATA
     dataset = LightcurveDataset(DATSET_PATH, transform=True, target_transform=True)
     catgories = dataset.get_catgories()
-    train_set, vaild_set = train_test_split(
-        dataset, train_size=TRAIN_SIZE, random_state=RANDOM_STATE
-    )
+    train_set, vaild_set = train_test_split(dataset, train_size=TRAIN_SIZE, random_state=RANDOM_STATE)
     train_dl, vaild_dl = get_data(train_set, vaild_set, batch_size=BATCH_SIZE)
     train_dl = WrappedDataLoader(train_dl, preprocess)
     vaild_dl = WrappedDataLoader(vaild_dl, preprocess)
@@ -54,10 +59,11 @@ def simple_demo():
 
     # TRAIN MODEL
     learner = learn(model, train_dl, vaild_dl, catgories)
-    # learner.lr_find()
+
+    learner.lr_find()
     learner.fit(EPOCHS)
     learner.show_confusion_matrix()
-
+        
 
 if __name__ == "__main__":
     simple_demo()

@@ -15,7 +15,9 @@ class demoModel(torch.nn.Module):
         super().__init__()
         self.conv1 = torch.nn.Sequential(
             torch.nn.Conv1d(1, 20, kernel_size=2, stride=1, padding=1),
+            torch.nn.BatchNorm1d(20),
             torch.nn.ReLU(),
+            torch.nn.MaxPool1d(kernel_size=3, stride=1),
         )
         self.conv2 = torch.nn.Sequential(
             torch.nn.Conv1d(20, 20, kernel_size=2, stride=1, padding=1),

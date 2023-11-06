@@ -9,8 +9,7 @@ import matplotlib.pyplot as plt
 from torch_lr_finder import LRFinder
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
-# from tqdm.autonotebook import tqdm
-
+from tqdm.autonotebook import tqdm
 
 class learn:
     def __init__(self, model, train_dl, vaild_dl, catgories=None):
@@ -26,6 +25,7 @@ class learn:
             opt.step()
             opt.zero_grad()
         return loss.item(), len(xb)
+    
 
     def predict(self, test_dl):
         self.model.eval()
@@ -48,7 +48,7 @@ class learn:
             start_time = time.time()
 
             self.model.train()
-            for xb, yb in self.train_dl:
+            for xb, yb in tqdm(self.train_dl):
                 self.__loss_batch(self.model, self.loss_func, xb, yb, self.opt)
 
             self.model.eval()
@@ -56,7 +56,7 @@ class learn:
                 losses, nums = zip(
                     *[
                         self.__loss_batch(self.model, self.loss_func, xb, yb)
-                        for xb, yb in self.vaild_dl
+                        for xb, yb in tqdm(self.vaild_dl)
                     ]
                 )
 
@@ -85,4 +85,4 @@ class learn:
         cm = confusion_matrix(true_labels, predict_labels)
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=catgories)
         disp.plot(xticks_rotation="vertical")
-        disp.figure_.savefig("./confusion_matrix.png", dpi=300, bbox_inches="tight")
+        plt.show()
